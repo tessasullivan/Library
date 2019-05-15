@@ -157,6 +157,7 @@ namespace Library.TestTools
       Assert.AreEqual(number, expected);      
 
     }
+    
     // [TestMethod]
     // public void GetCopiesId_GetsCopiesId_int()
     // {
@@ -170,7 +171,7 @@ namespace Library.TestTools
     //   Assert.AreEqual(1, result);
     // }
     [TestMethod]
-    public void Checkout_SetsCheckoutData_Data()
+    public void Checkout_SetsCheckoutAndCopiesData_Data()
     {
       string title = "Freedom and Necessity";
       int year = 1987;
@@ -185,6 +186,32 @@ namespace Library.TestTools
       string actualDueDate = book.GetDueDate(patronId).ToString("yyyy-MM-dd");
       Assert.AreEqual(number - 1, book.GetAvailable());
       Assert.AreEqual(expectedDueDate, actualDueDate);
+    }
+    // Create book and set stock (which writes entry to copies table), Checkout so we get the checkedOutId
+    // Verify that checkouts table is updated with return date, and returned is true
+    // Verify that copies table is updated and available is 1 more than what was listed as availabke
+    [TestMethod]
+    public void CheckIn_SetsCheckoutAndCopiesData_Data()
+    {
+      string title = "Freedom and Necessity";
+      int year = 1987;
+      int number = 2;
+      int patronId = 2;
+      Book book = new Book(title, year);
+      book.Save();
+      book.SetStock(number);
+      book.CheckOut(patronId);
+      int checkedOutId = book.GetCheckOutId(patronId);
+      book.CheckIn(checkedOutId, patronId);
+      
+      string expectedReturnDate = DateTime.Now.ToString("yyyy-MM-dd");
+      string actualReturnedDate = book.GetReturnedDate(patronId).ToString("yyyy-MM-dd");
+      bool actualReturnedStatus = book.GetReturnedStatus(patronId);
+      int actualAvailable = book.GetAvailable();
+
+      Assert.AreEqual(expectedReturnDate, actualReturnedDate);
+      Assert.AreEqual(true, actualReturnedStatus);
+      Assert.AreEqual(number, actualAvailable);
     }
   }
 }

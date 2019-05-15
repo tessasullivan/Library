@@ -262,8 +262,7 @@ namespace Library.Models
         return stock;                    
     }
     public int GetAvailable()
-    {
-        
+    {   
         MySqlConnection conn = DB.Connection();
         conn.Open();
         var cmd = conn.CreateCommand() as MySqlCommand;
@@ -304,6 +303,30 @@ namespace Library.Models
         }
         return copiesId;
     }
+    public int GetCheckOutId(int patronId)
+    {
+        int copiesId = GetCopiesId();
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"SELECT * FROM checkouts WHERE patron_id = @patronId AND copies_id = @copiesId;";
+        MySqlParameter patronIdParameter = new MySqlParameter("@patronId", patronId);
+        MySqlParameter copiesIdParameter = new MySqlParameter("@copiesId", copiesId);
+        cmd.Parameters.Add(patronIdParameter);
+        cmd.Parameters.Add(copiesIdParameter);
+        int checkOutId = 0;
+        var rdr = cmd.ExecuteReader() as MySqlDataReader;
+        while(rdr.Read())
+        {
+            checkOutId = rdr.GetInt32(0);
+        }
+        conn.Close();
+        if(conn != null)
+        {
+            conn.Dispose();
+        }
+        return checkOutId;        
+    }
     public DateTime GetDueDate(int patronId)
     {
         int copiesId = GetCopiesId();
@@ -328,25 +351,101 @@ namespace Library.Models
         }
         return dueDate;             
     }
+    public DateTime GetReturnedDate(int patronId)
+    {
+        int copiesId = GetCopiesId();
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"SELECT * FROM checkouts WHERE patron_id = @patronId AND copies_id = @copiesId;";
+        MySqlParameter patronIdParameter = new MySqlParameter("@patronId", patronId);
+        MySqlParameter copiesIdParameter = new MySqlParameter("@copiesId", copiesId);
+        cmd.Parameters.Add(patronIdParameter);
+        cmd.Parameters.Add(copiesIdParameter);
+        DateTime returnedDate = new DateTime();
+        var rdr = cmd.ExecuteReader() as MySqlDataReader;
+        while(rdr.Read())
+        {
+            returnedDate = rdr.GetDateTime(5);
+        }
+        conn.Close();
+        if(conn != null)
+        {
+            conn.Dispose();
+        }
+        return returnedDate;             
+    }
+    public bool GetReturnedStatus(int patronId)
+    {
+        int copiesId = GetCopiesId();
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"SELECT * FROM checkouts WHERE patron_id = @patronId AND copies_id = @copiesId;";
+        MySqlParameter patronIdParameter = new MySqlParameter("@patronId", patronId);
+        MySqlParameter copiesIdParameter = new MySqlParameter("@copiesId", copiesId);
+        cmd.Parameters.Add(patronIdParameter);
+        cmd.Parameters.Add(copiesIdParameter);
+        bool returned = false;
+        var rdr = cmd.ExecuteReader() as MySqlDataReader;
+        while(rdr.Read())
+        {
+            returned = rdr.GetBoolean(6);
+        }
+        conn.Close();
+        if(conn != null)
+        {
+            conn.Dispose();
+        }
+        return returned;             
+    }
     public void CheckOut(int patronId)
     {
         MySqlConnection conn = DB.Connection();
         conn.Open();
         var cmd = conn.CreateCommand() as MySqlCommand;
-        cmd.CommandText = @"UPDATE copies SET available = @available WHERE book_id = @thisBookId; INSERT INTO checkouts (patron_id, copies_id, due_date, checkout_date, returned) VALUES (@thisPatronId, @copiesId, @dueDate, @checkoutDate, @returned);";
+        cmd.CommandText = @"UPDATE copies SET available = @available WHERE id = @copiesId; INSERT INTO checkouts (patron_id, copies_id, due_date, checkout_date, returned) VALUES (@thisPatronId, @copiesId, @dueDate, @checkoutDate, @returned);";
         MySqlParameter available = new MySqlParameter("@available", GetAvailable() - 1);
-        MySqlParameter thisBookId = new MySqlParameter("@thisBookId", _id);
+        // MySqlParameter thisBookId = new MySqlParameter("@thisBookId", _id);
         MySqlParameter thisPatronId = new MySqlParameter("@thisPatronId", patronId);
         MySqlParameter copiesId = new MySqlParameter("@copiesId", GetCopiesId());
         MySqlParameter dueDate = new MySqlParameter("@dueDate", DateTime.Now.AddDays(14));
         MySqlParameter checkoutDate = new MySqlParameter("@checkoutDate", DateTime.Now);
         MySqlParameter returned = new MySqlParameter("@returned", false);
         cmd.Parameters.Add(available);
-        cmd.Parameters.Add(thisBookId);
+        // cmd.Parameters.Add(thisBookId);
         cmd.Parameters.Add(thisPatronId);
         cmd.Parameters.Add(copiesId);
         cmd.Parameters.Add(dueDate);
         cmd.Parameters.Add(checkoutDate);
+        cmd.Parameters.Add(returned);
+        cmd.ExecuteNonQuery();
+        conn.Close();
+        if (conn != null)
+        {
+            conn.Dispose();
+        }
+    }
+    // Checkin changes checkouts table - 
+    //  sets returned_date = today
+    //  sets returned to true
+    // and copies table adds 1 to available
+    public void CheckIn(int checkoutId, int patronId)
+    {
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"UPDATE copies SET available = @available WHERE id = @copiesId;
+            UPDATE checkouts SET returned_date = @returnedDate, returned = @returned WHERE copies_id = @copiesId;";
+        MySqlParameter available = new MySqlParameter("@available", GetAvailable() + 1);
+        // MySqlParameter thisBookId = new MySqlParameter("@thisBookId", _id);
+        MySqlParameter copiesId = new MySqlParameter("@copiesId", GetCopiesId());
+        MySqlParameter returnedDate = new MySqlParameter("@returnedDate", DateTime.Now);
+        MySqlParameter returned = new MySqlParameter("@returned", true);
+        cmd.Parameters.Add(available);
+        // cmd.Parameters.Add(thisBookId);
+        cmd.Parameters.Add(copiesId);
+        cmd.Parameters.Add(returnedDate);
         cmd.Parameters.Add(returned);
         cmd.ExecuteNonQuery();
         conn.Close();
