@@ -80,7 +80,7 @@ namespace Library.Models
         MySqlConnection conn = DB.Connection();
         conn.Open();
         var cmd = conn.CreateCommand() as MySqlCommand;
-        cmd.CommandText = @"SELECT authors.* FROM authors JOIN books_authors ON (authors.id = books_authors.author_id) WHERE books_authors.book_id;";
+        cmd.CommandText = @"SELECT authors.* FROM authors JOIN books_authors ON (authors.id = books_authors.author_id) WHERE books_authors.book_id = @thisId;";
         MySqlParameter thisId = new MySqlParameter("@thisId", _id);
         cmd.Parameters.Add(thisId);
         var rdr = cmd.ExecuteReader() as MySqlDataReader;
@@ -237,8 +237,7 @@ namespace Library.Models
         }
     }
     public int GetStock()
-    {
-        
+    {      
         MySqlConnection conn = DB.Connection();
         conn.Open();
         var cmd = conn.CreateCommand() as MySqlCommand;
@@ -406,14 +405,12 @@ namespace Library.Models
         var cmd = conn.CreateCommand() as MySqlCommand;
         cmd.CommandText = @"UPDATE copies SET available = @available WHERE id = @copiesId; INSERT INTO checkouts (patron_id, copies_id, due_date, checkout_date, returned) VALUES (@thisPatronId, @copiesId, @dueDate, @checkoutDate, @returned);";
         MySqlParameter available = new MySqlParameter("@available", GetAvailable() - 1);
-        // MySqlParameter thisBookId = new MySqlParameter("@thisBookId", _id);
         MySqlParameter thisPatronId = new MySqlParameter("@thisPatronId", patronId);
         MySqlParameter copiesId = new MySqlParameter("@copiesId", GetCopiesId());
         MySqlParameter dueDate = new MySqlParameter("@dueDate", DateTime.Now.AddDays(14));
         MySqlParameter checkoutDate = new MySqlParameter("@checkoutDate", DateTime.Now);
         MySqlParameter returned = new MySqlParameter("@returned", false);
         cmd.Parameters.Add(available);
-        // cmd.Parameters.Add(thisBookId);
         cmd.Parameters.Add(thisPatronId);
         cmd.Parameters.Add(copiesId);
         cmd.Parameters.Add(dueDate);
@@ -438,12 +435,10 @@ namespace Library.Models
         cmd.CommandText = @"UPDATE copies SET available = @available WHERE id = @copiesId;
             UPDATE checkouts SET returned_date = @returnedDate, returned = @returned WHERE copies_id = @copiesId;";
         MySqlParameter available = new MySqlParameter("@available", GetAvailable() + 1);
-        // MySqlParameter thisBookId = new MySqlParameter("@thisBookId", _id);
         MySqlParameter copiesId = new MySqlParameter("@copiesId", GetCopiesId());
         MySqlParameter returnedDate = new MySqlParameter("@returnedDate", DateTime.Now);
         MySqlParameter returned = new MySqlParameter("@returned", true);
         cmd.Parameters.Add(available);
-        // cmd.Parameters.Add(thisBookId);
         cmd.Parameters.Add(copiesId);
         cmd.Parameters.Add(returnedDate);
         cmd.Parameters.Add(returned);

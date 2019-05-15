@@ -158,5 +158,47 @@ namespace Library.Models
         conn.Dispose();
       }
     }
+    public void Edit(string first, string last)
+    {
+      MySqlConnection conn = DB.Connection();
+      conn.Open();
+      var cmd = conn.CreateCommand() as MySqlCommand;
+      cmd.CommandText = @"UPDATE authors SET first = @first, last=@last WHERE id=@authorId;";
+      MySqlParameter authorId = new MySqlParameter("@authorId", _id);
+      MySqlParameter firstName = new MySqlParameter("@first", first);
+      MySqlParameter lastName = new MySqlParameter("@last", last);
+      cmd.Parameters.Add(authorId);
+      cmd.Parameters.Add(firstName);
+      cmd.Parameters.Add(lastName);
+      cmd.ExecuteNonQuery();
+      _first = first;
+      _last = last;
+      conn.Close();
+      if (conn != null)
+      {
+          conn.Dispose();
+      }
+    }
+    // Get books via books_authors table
+    public List<Book> GetBooks()
+    {
+      List<Book> foundBooks = new List<Book>{};
+      MySqlConnection conn = DB.Connection();
+      conn.Open();
+      var cmd = conn.CreateCommand() as MySqlCommand;
+      cmd.CommandText = @"SELECT books.* FROM books JOIN books_authors ON (books.id = books_authors.book_id) WHERE books_authors.author_id = @thisId;";
+      MySqlParameter thisId = new MySqlParameter("@thisId", _id);
+      cmd.Parameters.Add(thisId);
+      var rdr = cmd.ExecuteReader() as MySqlDataReader;
+      while(rdr.Read())
+      {
+        int bookId = rdr.GetInt32(0);
+        string title = rdr.GetString(1);
+        int year = rdr.GetInt32(2);
+        Book book = new Book(title, year, bookId);
+        foundBooks.Add(book);
+      }     
+      return foundBooks;
+    }
   }
 }
