@@ -61,12 +61,8 @@ namespace Library.Models
         conn.Open();
         var cmd = conn.CreateCommand() as MySqlCommand;
         cmd.CommandText = @"INSERT INTO books (title, year) VALUES (@title, @year);";
-        MySqlParameter title = new MySqlParameter();
-        title.ParameterName = "@title";
-        title.Value = this._title;
-        MySqlParameter year = new MySqlParameter();
-        year.ParameterName = "@year";
-        year.Value = this._year;
+        MySqlParameter title = new MySqlParameter("@title", this._title);
+        MySqlParameter year = new MySqlParameter("@year", this._year);
         cmd.Parameters.Add(title);
         cmd.Parameters.Add(year);
         cmd.ExecuteNonQuery();
@@ -84,9 +80,7 @@ namespace Library.Models
         conn.Open();
         var cmd = conn.CreateCommand() as MySqlCommand;
         cmd.CommandText = @"SELECT * FROM books WHERE id = @thisId;";
-        MySqlParameter thisId = new MySqlParameter();
-        thisId.ParameterName = "@thisId";
-        thisId.Value = id;
+        MySqlParameter thisId = new MySqlParameter("@thisId", id);
         cmd.Parameters.Add(thisId);
         var rdr = cmd.ExecuteReader() as MySqlDataReader;
         int bookId = 0;
@@ -135,13 +129,94 @@ namespace Library.Models
         MySqlConnection conn = DB.Connection();
         conn.Open();
         var cmd = conn.CreateCommand() as MySqlCommand;
-        cmd.CommandText = @"DELETE FROM books;";
+        cmd.CommandText = @"DELETE FROM books;DELETE FROM copies;DELETE FROM books_authors;DELETE FROM categories_books;DELETE FROM books_authors;";
         cmd.ExecuteNonQuery();
         conn.Close();
         if (conn != null)
         {
             conn.Dispose();
         }
+    }
+    public void Edit (string newTitle, int newYear)
+    {
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"UPDATE books SET title = @newTitle, year = @newYear WHERE id = @bookId;";
+        MySqlParameter bookId = new MySqlParameter("@bookId", _id);
+        cmd.Parameters.Add(bookId);
+        MySqlParameter title = new MySqlParameter("@newTitle", newTitle);
+        cmd.Parameters.Add(title);
+        MySqlParameter year = new MySqlParameter("@newYear", newYear);
+        cmd.Parameters.Add(year);
+        cmd.ExecuteNonQuery();
+        _title = newTitle;
+        conn.Close();
+        if (conn != null)
+        {
+            conn.Dispose();
+        }
+    }
+
+    public static void Delete(int id)
+    {
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"DELETE FROM books WHERE id = @thisId;";
+        MySqlParameter thisId = new MySqlParameter("@thisId", id);
+        cmd.Parameters.Add(thisId);
+        cmd.ExecuteNonQuery();
+        conn.Close();
+        if (conn != null)
+        {
+            conn.Dispose();
+        }
+    }
+    public void SetStock(int number)
+    {
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"INSERT INTO copies (book_id, stock, available) VALUES
+            (@bookId, @stock, @available);";
+        MySqlParameter bookId = new MySqlParameter("@bookId", this._id);
+        MySqlParameter stock = new MySqlParameter("@stock", number);
+        MySqlParameter available = new MySqlParameter("@available", number);
+        cmd.Parameters.Add(bookId);
+        cmd.Parameters.Add(stock);
+        cmd.Parameters.Add(available);
+        cmd.ExecuteNonQuery();
+        conn.Close();
+        if (conn != null)
+        {
+            conn.Dispose();
+        }
+    }
+    public int GetStock()
+    {
+        
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"SELECT * FROM copies WHERE book_id = @thisId;";
+        MySqlParameter thisId = new MySqlParameter("@thisId", this._id);
+        cmd.Parameters.Add(thisId);
+        int stock = 0;
+        var rdr = cmd.ExecuteReader() as MySqlDataReader;
+        
+        Console.WriteLine(_id);
+        while(rdr.Read())
+        {
+            stock = rdr.GetInt32(2);
+        }
+        Console.WriteLine(stock);
+        conn.Close();
+        if(conn != null)
+        {
+            conn.Dispose();
+        }
+        return stock;                    
     }
   }
 }
