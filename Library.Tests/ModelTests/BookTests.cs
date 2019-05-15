@@ -123,5 +123,68 @@ namespace Library.TestTools
       int result = book.GetStock();
       Assert.AreEqual(number, result);
     }
+    [TestMethod]
+    public void SetBookAuthor_SetsBookAuthor_Book()
+    {
+      string title = "Freedom and Necessity";
+      int year = 1987;
+      Book book = new Book(title, year);
+      book.Save();
+      string first = "Steven";
+      string last = "Brust";
+      Author author = new Author(first, last);
+      author.Save();
+      string first2 = "Emma";
+      string last2 = "Bull";
+      Author author2 = new Author(first2, last2);
+      author2.Save();
+      book.SetBookAuthor(author.GetId());
+      book.SetBookAuthor(author2.GetId());
+      List<Author> expected = new List<Author> {author, author2};
+      List<Author> result = book.GetBookAuthors();
+      CollectionAssert.AreEqual(expected, result);
+    }
+    [TestMethod]
+    public void GetAvailable_GetsAvailableNumberOfBooks_Int()
+    {
+      string title = "Freedom and Necessity";
+      int year = 1987;
+      int number = 2;
+      Book book = new Book(title, year);
+      book.Save();
+      book.SetStock(number);
+      int expected = book.GetAvailable();
+      Assert.AreEqual(number, expected);      
+
+    }
+    // [TestMethod]
+    // public void GetCopiesId_GetsCopiesId_int()
+    // {
+    //   string title = "Freedom and Necessity";
+    //   int year = 1987;
+    //   int number = 2;
+    //   Book book = new Book(title, year);
+    //   book.Save();
+    //   book.SetStock(number);
+    //   int result = book.GetCopiesId();
+    //   Assert.AreEqual(1, result);
+    // }
+    [TestMethod]
+    public void Checkout_SetsCheckoutData_Data()
+    {
+      string title = "Freedom and Necessity";
+      int year = 1987;
+      int number = 2;
+      int patronId = 2;
+      DateTime today = DateTime.Now;
+      string expectedDueDate = today.AddDays(14).ToString("yyyy-MM-dd");
+      Book book = new Book(title, year);
+      book.Save();
+      book.SetStock(number);
+      book.CheckOut(patronId);
+      string actualDueDate = book.GetDueDate(patronId).ToString("yyyy-MM-dd");
+      Assert.AreEqual(number - 1, book.GetAvailable());
+      Assert.AreEqual(expectedDueDate, actualDueDate);
+    }
   }
 }

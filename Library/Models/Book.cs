@@ -73,7 +73,50 @@ namespace Library.Models
             conn.Dispose();
         }
     }
-
+    // This book gets a list of authors for a single book.
+    public List<Author> GetBookAuthors()
+    {
+        List<Author> authors = new List<Author> {};
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"SELECT authors.* FROM authors JOIN books_authors ON (authors.id = books_authors.author_id) WHERE books_authors.book_id;";
+        MySqlParameter thisId = new MySqlParameter("@thisId", _id);
+        cmd.Parameters.Add(thisId);
+        var rdr = cmd.ExecuteReader() as MySqlDataReader;
+        while(rdr.Read())
+        {
+            int authorId = rdr.GetInt32(0);
+            string first = rdr.GetString(1);
+            string last = rdr.GetString(2);
+            Author author = new Author(first, last, authorId);
+            authors.Add(author);
+        }
+        conn.Close();
+        if(conn != null)
+        {
+            conn.Dispose();
+        }        
+        return authors;
+    }
+    // This method will set a single book author for a single book.  Needs to be called multiple times for multiple authors of a single book.
+    public void SetBookAuthor(int authorId)
+    {
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"INSERT INTO books_authors (book_id, author_id) VALUES (@bookId, @authorId);";
+        MySqlParameter bookId = new MySqlParameter("@bookId", _id);
+        MySqlParameter authorIdParameter = new MySqlParameter("@authorId", authorId);
+        cmd.Parameters.Add(bookId);
+        cmd.Parameters.Add(authorIdParameter);
+        cmd.ExecuteNonQuery();
+        conn.Close();
+        if (conn != null)
+        {
+            conn.Dispose();
+        }        
+    }
     public static Book Find(int id)
     {
         MySqlConnection conn = DB.Connection();
@@ -217,6 +260,100 @@ namespace Library.Models
             conn.Dispose();
         }
         return stock;                    
+    }
+    public int GetAvailable()
+    {
+        
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"SELECT * FROM copies WHERE book_id = @thisId;";
+        MySqlParameter thisId = new MySqlParameter("@thisId", this._id);
+        cmd.Parameters.Add(thisId);
+        int available = 0;
+        var rdr = cmd.ExecuteReader() as MySqlDataReader;
+        while(rdr.Read())
+        {
+            available = rdr.GetInt32(3);
+        }
+        conn.Close();
+        if(conn != null)
+        {
+            conn.Dispose();
+        }
+        return available;                    
+    }
+    public int GetCopiesId()
+    {
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"SELECT * FROM copies WHERE book_id = @thisId;";
+        MySqlParameter thisId = new MySqlParameter("@thisId", this._id);
+        cmd.Parameters.Add(thisId);
+        int copiesId = 0;
+        var rdr = cmd.ExecuteReader() as MySqlDataReader;
+        while(rdr.Read())
+        {
+            copiesId = rdr.GetInt32(0);
+        }
+        conn.Close();
+        if(conn != null)
+        {
+            conn.Dispose();
+        }
+        return copiesId;
+    }
+    public DateTime GetDueDate(int patronId)
+    {
+        int copiesId = GetCopiesId();
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"SELECT * FROM checkouts WHERE patron_id = @patronId AND copies_id = @copiesId;";
+        MySqlParameter patronIdParameter = new MySqlParameter("@patronId", patronId);
+        MySqlParameter copiesIdParameter = new MySqlParameter("@copiesId", copiesId);
+        cmd.Parameters.Add(patronIdParameter);
+        cmd.Parameters.Add(copiesIdParameter);
+        DateTime dueDate = new DateTime();
+        var rdr = cmd.ExecuteReader() as MySqlDataReader;
+        while(rdr.Read())
+        {
+            dueDate = rdr.GetDateTime(3);
+        }
+        conn.Close();
+        if(conn != null)
+        {
+            conn.Dispose();
+        }
+        return dueDate;             
+    }
+    public void CheckOut(int patronId)
+    {
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"UPDATE copies SET available = @available WHERE book_id = @thisBookId; INSERT INTO checkouts (patron_id, copies_id, due_date, checkout_date, returned) VALUES (@thisPatronId, @copiesId, @dueDate, @checkoutDate, @returned);";
+        MySqlParameter available = new MySqlParameter("@available", GetAvailable() - 1);
+        MySqlParameter thisBookId = new MySqlParameter("@thisBookId", _id);
+        MySqlParameter thisPatronId = new MySqlParameter("@thisPatronId", patronId);
+        MySqlParameter copiesId = new MySqlParameter("@copiesId", GetCopiesId());
+        MySqlParameter dueDate = new MySqlParameter("@dueDate", DateTime.Now.AddDays(14));
+        MySqlParameter checkoutDate = new MySqlParameter("@checkoutDate", DateTime.Now);
+        MySqlParameter returned = new MySqlParameter("@returned", false);
+        cmd.Parameters.Add(available);
+        cmd.Parameters.Add(thisBookId);
+        cmd.Parameters.Add(thisPatronId);
+        cmd.Parameters.Add(copiesId);
+        cmd.Parameters.Add(dueDate);
+        cmd.Parameters.Add(checkoutDate);
+        cmd.Parameters.Add(returned);
+        cmd.ExecuteNonQuery();
+        conn.Close();
+        if (conn != null)
+        {
+            conn.Dispose();
+        }
     }
   }
 }
