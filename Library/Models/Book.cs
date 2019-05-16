@@ -475,6 +475,30 @@ namespace Library.Models
         }
         return foundBooks;                
     }
-    
+    public bool DoesBookExist()
+    {
+      MySqlConnection conn = DB.Connection();
+      conn.Open();
+      var cmd = conn.CreateCommand() as MySqlCommand;
+      cmd.CommandText = @"SELECT COUNT(*) FROM books WHERE title = @title AND year = @year;";
+      MySqlParameter titleP = new MySqlParameter("@title", _title);
+      cmd.Parameters.Add(titleP);
+      MySqlParameter yearP = new MySqlParameter("@year", _year);
+      cmd.Parameters.Add(yearP);
+      var rdr = cmd.ExecuteReader() as MySqlDataReader;
+      int count = 0;
+      while(rdr.Read())
+      {      
+        count = rdr.GetInt32(0);
+      }
+      if (count > 0)
+      {
+        return true; 
+      }
+      else 
+      { 
+          return false; 
+      }        
+    }
   }
 }

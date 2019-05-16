@@ -224,12 +224,28 @@ namespace Library.TestTools
 
       List<Book> expected = new List<Book> {book};
       List<Book> actual = Book.SearchTitle(search);
-      foreach (Book foundBook in actual)
-      {
-        System.Console.WriteLine("foundBook" + foundBook.GetTitle());
-      }
-      System.Console.WriteLine("actual " + actual.Count);
       CollectionAssert.AreEqual(expected, actual);
     }
+    [TestMethod]
+    public void DoesBookExist_BookExists_True()
+    {
+      string title = "Freedom and Necessity";
+      int year = 1987;
+      Book book = new Book(title, year);
+      book.Save();
+
+      bool actual = book.DoesBookExist();
+      Assert.AreEqual(true, actual);
+    }
+    [TestMethod]
+    public void DoesBookExist_BookDoesNotExist_False()
+    {
+      string title = "Freedom and Necessity";
+      int year = 1987;
+      Book book = new Book(title, year);
+
+      bool actual = book.DoesBookExist();
+      Assert.AreEqual(false, actual);
+    }  
   }
 }
