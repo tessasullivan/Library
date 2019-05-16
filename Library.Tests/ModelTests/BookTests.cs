@@ -202,7 +202,7 @@ namespace Library.TestTools
       book.SetStock(number);
       book.CheckOut(patronId);
       int checkedOutId = book.GetCheckOutId(patronId);
-      book.CheckIn(checkedOutId, patronId);
+      book.CheckIn(checkedOutId);
       
       string expectedReturnDate = DateTime.Now.ToString("yyyy-MM-dd");
       string actualReturnedDate = book.GetReturnedDate(patronId).ToString("yyyy-MM-dd");

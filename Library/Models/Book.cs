@@ -427,7 +427,7 @@ namespace Library.Models
     //  sets returned_date = today
     //  sets returned to true
     // and copies table adds 1 to available
-    public void CheckIn(int checkoutId, int patronId)
+    public void CheckIn(int checkoutId)
     {
         MySqlConnection conn = DB.Connection();
         conn.Open();
