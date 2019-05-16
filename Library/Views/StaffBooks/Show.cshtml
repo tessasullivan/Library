@@ -1,0 +1,32 @@
+@using Library.Models;
+@{ Layout = "_Layout"; }
+@Html.Partial("_Staff")
+
+<h3>@Model.GetTitle() (@Model.GetYear())</h3>
+<h4>@foreach(Author author in Model.GetBookAuthors())
+    {
+        @author.GetFirst()<span> </span>@author.GetLast()<br>
+    }
+</h4>
+<table>
+    <tr>
+        <th>Stock</th>
+        <th>Available</th>
+    </tr>
+    <tr>
+        <td>@Model.GetStock()</td>
+        <td>@Model.GetAvailable()</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <th>Copy</th>
+        <th>Status</th>
+        <th>Patron</th>
+        <th>Checkout Date</th>
+        <th>Due Date</th>
+    </tr>
+
+
+</table>

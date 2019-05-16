@@ -97,7 +97,28 @@ namespace Library.TestTools
       List<Book> actualResult = author.GetBooks();
 
       CollectionAssert.AreEqual(expectedResult, actualResult);  
-    }        
+    } 
+
+    [TestMethod]
+    public void doesAuthorExist_ReturnsTrueIfAuthorExists_True()
+    {
+      string first = "William";
+      string last = "Shakespeare";
+      Author author = new Author(first, last);
+      author.Save();
+      bool actual = author.DoesAuthorExist(); 
+      Assert.AreEqual(true, actual);   
+    }       
+    [TestMethod]
+    public void doesAuthorExist_ReturnsFalseIfAuthorDoesNotExist_False()
+    {
+      string first = "William";
+      string last = "Shakespeare";
+      Author author = new Author(first, last);
+      // author.Save();
+      bool actual = author.DoesAuthorExist(); 
+      Assert.AreEqual(false, actual);   
+    }
   }
 }
     

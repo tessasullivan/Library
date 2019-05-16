@@ -1,0 +1,21 @@
+@using Library.Models;
+@{ Layout = "_Layout"; }
+@Html.Partial("_Staff")
+
+<h1></h1>
+<form action="/staff/books" method="post">
+    <input name='title' type='text' required placeholder="Title">
+    <label for='first1'>First Author</label>
+    <input name='first1' type='text' required placeholder="First Name">
+    <input name='last1' type='text' required placeholder="Last Name"><br>
+
+    <label for='first2'>Second Author</label>
+    <input name='first2' type='text' placeholder="First Name">
+    <input name='last2' type='text' placeholder="Last Name"><br>
+
+    <label for='first3'>Third Author</label>
+    <input name='first3' type='text' placeholder="First Name">
+    <input name='last3' type='text' placeholder="Last Name"><br>
+
+    <input name='year' type='text' placeholder="Year">
+</form>

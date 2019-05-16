@@ -213,5 +213,23 @@ namespace Library.TestTools
       Assert.AreEqual(true, actualReturnedStatus);
       Assert.AreEqual(number, actualAvailable);
     }
+    [TestMethod]
+    public void SearchTitle_ReturnsMatchedBookList_BookList()
+    {
+      string title = "Freedom and Necessity";
+      int year = 1987;
+      Book book = new Book(title, year);
+      book.Save();
+      string search = "Freedom";
+
+      List<Book> expected = new List<Book> {book};
+      List<Book> actual = Book.SearchTitle(search);
+      foreach (Book foundBook in actual)
+      {
+        System.Console.WriteLine("foundBook" + foundBook.GetTitle());
+      }
+      System.Console.WriteLine("actual " + actual.Count);
+      CollectionAssert.AreEqual(expected, actual);
+    }
   }
 }

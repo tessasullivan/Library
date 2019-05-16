@@ -247,12 +247,10 @@ namespace Library.Models
         int stock = 0;
         var rdr = cmd.ExecuteReader() as MySqlDataReader;
         
-        Console.WriteLine(_id);
         while(rdr.Read())
         {
             stock = rdr.GetInt32(2);
         }
-        Console.WriteLine(stock);
         conn.Close();
         if(conn != null)
         {
@@ -449,5 +447,34 @@ namespace Library.Models
             conn.Dispose();
         }
     }
+    public static List<Book> SearchTitle(string searchString)
+    {
+        List<Book> foundBooks = new List<Book>{};
+        MySqlConnection conn = DB.Connection();
+        conn.Open();
+        var cmd = conn.CreateCommand() as MySqlCommand;
+        cmd.CommandText = @"SELECT * FROM books where title like @SearchString;";
+        MySqlParameter searchStringParameter = new MySqlParameter("@SearchString", '%' + searchString + '%');
+        cmd.Parameters.Add(searchStringParameter);
+        var rdr = cmd.ExecuteReader() as MySqlDataReader;
+        int bookId = 0;
+        string bookTitle = "";
+        int year = 0;
+        while (rdr.Read())
+        {
+            bookId = rdr.GetInt32(0);
+            bookTitle = rdr.GetString(1);
+            year = rdr.GetInt32(2);
+            Book foundBook = new Book(bookTitle, year, bookId);
+            foundBooks.Add(foundBook);
+        }
+        conn.Close();
+        if(conn != null)
+        {
+            conn.Dispose();
+        }
+        return foundBooks;                
+    }
+    
   }
 }

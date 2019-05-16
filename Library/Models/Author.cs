@@ -200,5 +200,30 @@ namespace Library.Models
       }     
       return foundBooks;
     }
+    public bool DoesAuthorExist()
+    {
+      MySqlConnection conn = DB.Connection();
+      conn.Open();
+      var cmd = conn.CreateCommand() as MySqlCommand;
+      cmd.CommandText = @"SELECT COUNT(*) FROM authors WHERE first = @first AND last = @last;";
+      MySqlParameter firstP = new MySqlParameter("@first", _first);
+      cmd.Parameters.Add(firstP);
+      MySqlParameter secondP = new MySqlParameter("@last", _last);
+      cmd.Parameters.Add(secondP);
+      var rdr = cmd.ExecuteReader() as MySqlDataReader;
+      int count = 0;
+      while(rdr.Read())
+      {      
+        count = rdr.GetInt32(0);
+      }
+      if (count > 0)
+      {
+        return true; 
+      }
+      else 
+      { 
+          return false; 
+      }
+    }
   }
 }
