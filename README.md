@@ -26,7 +26,7 @@ This application (once complete) will allow a library employee to manage books a
 2. Install .Net 2.2 
     * Go to https://dotnet.microsoft.com/download/dotnet-core/2.2 and download the appropriate installer for your OS.
 3. cd to Library and run ```dotnet restore```.
-4. cd to Library.Tests and run ```dotnet restore``` (optional).
+4. cd to Library.Tests and run ```dotnet restore``` (optional).  Numerous unit tests are included.
 5. Install and configure MySQL - MAMP is recommended.
 6. Run MySQL in the terminal with user root.  If no special password has been added to root, the command is ```mysql -uroot -proot```
 7. Create the database and their tables.  You can either  
